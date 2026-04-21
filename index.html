@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screening Lot Lelang</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a40;
+    --accent: #00ff88;
+    --accent2: #ff4d6d;
+    --accent3: #ffd700;
+    --text: #e8e8f0;
+    --text-muted: #6b6b8a;
+    --layak: #00ff88;
+    --skip: #ff4d6d;
+    --warning: #ffd700;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: 
+      radial-gradient(ellipse at 20% 20%, rgba(0,255,136,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(255,77,109,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .header {
+    position: relative;
+    z-index: 1;
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .header-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent), #00ccaa);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+
+  .header h1 {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .header h1 span {
+    color: var(--accent);
+  }
+
+  .header p {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .badge {
+    margin-left: auto;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    color: var(--accent);
+  }
+
+  .main {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 40px;
+  }
+
+  /* Upload Zone */
+  .upload-section {
+    margin-bottom: 32px;
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 16px;
+    padding: 48px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    background: var(--surface);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(0,255,136,0.03);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+    display: block;
+  }
+
+  .upload-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .upload-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+  }
+
+  .upload-types {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+  }
+
+  .type-badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-muted);
+  }
+
+  /* Preview area */
+  .preview-area {
+    display: none;
+    margin-top: 16px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+
+  .preview-area img {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    background: #000;
+  }
+
+  .preview-header {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .preview-header .filename {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Analyze button */
+  .analyze-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--accent), #00ccaa);
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 800;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 16px;
+    display: none;
+  }
+
+  .analyze-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px rgba(0,255,136,0.25);
+  }
+
+  .analyze-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Loading */
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+  }
+
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .loading-text span {
+    color: var(--accent);
+    animation: pulse 1.5s ease infinite;
+  }
+
+  @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity: 0.3 } }
+
+  /* Results */
+  .results-section {
+    display: none;
+  }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  .results-title {
+    font-size: 22px;
+    font-weight: 800;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+
+  .stat-card.layak { border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.05); }
+  .stat-card.skip { border-color: rgba(255,77,109,0.3); background: rgba(255,77,109,0.05); }
+  .stat-card.total { border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.05); }
+
+  .stat-num {
+    font-size: 32px;
+    font-weight: 800;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .stat-card.layak .stat-num { color: var(--layak); }
+  .stat-card.skip .stat-num { color: var(--skip); }
+  .stat-card.total .stat-num { color: var(--warning); }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    margin-top: 2px;
+  }
+
+  /* Lot cards */
+  .lot-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .lot-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: all 0.2s;
+    animation: slideIn 0.3s ease both;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .lot-card.layak { border-left: 4px solid var(--layak); }
+  .lot-card.skip { border-left: 4px solid var(--skip); }
+  .lot-card.unknown { border-left: 4px solid var(--text-muted); }
+
+  .lot-card-header {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    gap: 16px;
+  }
+
+  .lot-number {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .lot-car-info {
+    flex: 1;
+  }
+
+  .lot-car-name {
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .lot-car-detail {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .lot-status {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+    white-space: nowrap;
+  }
+
+  .lot-status.layak {
+    background: rgba(0,255,136,0.15);
+    color: var(--layak);
+    border: 1px solid rgba(0,255,136,0.3);
+  }
+
+  .lot-status.skip {
+    background: rgba(255,77,109,0.15);
+    color: var(--skip);
+    border: 1px solid rgba(255,77,109,0.3);
+  }
+
+  .lot-status.unknown {
+    background: rgba(107,107,138,0.15);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .lot-card-body {
+    padding: 0 20px 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 10px;
+  }
+
+  .price-item {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  .price-item-label {
+    font-size: 10px;
+    font-family: 'Space Mono', monospace;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  .price-item-value {
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .price-item-value.lelang { color: var(--warning); }
+  .price-item-value.batas { color: var(--text-muted); }
+  .price-item-value.jual { color: #8888ff; }
+  .price-item-value.selisih.plus { color: var(--layak); }
+  .price-item-value.selisih.minus { color: var(--skip); }
+
+  .lot-note {
+    padding: 0 20px 14px;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'Space Mono', monospace;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    margin-top: 4px;
+  }
+
+  .lot-note.not-found {
+    color: var(--warning);
+  }
+
+  /* Reset button */
+  .reset-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: 'Space Mono', monospace;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover {
+    border-color: var(--text-muted);
+  }
+
+  /* Error */
+  .error-box {
+    display: none;
+    background: rgba(255,77,109,0.1);
+    border: 1px solid rgba(255,77,109,0.3);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--skip);
+  }
+
+  @media (max-width: 600px) {
+    .main { padding: 20px; }
+    .header { padding: 20px; }
+    .stats-row { flex-direction: column; }
+    .lot-card-body { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🏷️</div>
+  <div>
+    <h1>Screening <span>Lot Lelang</span></h1>
+    <p>AI-powered · 36 referensi harga · threshold 8% di bawah Jual Min</p>
+  </div>
+  <div class="badge">v1.0</div>
+</div>
+
+<div class="main">
+
+  <!-- API Key Input -->
+  <div class="upload-section" style="margin-bottom:20px">
+    <div class="section-label">// Google Gemini API Key</div>
+    <div style="display:flex;gap:10px;align-items:center;">
+      <input type="password" id="apiKeyInput" placeholder="Paste API key kamu di sini (AIzaSy...)" style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;outline:none;">
+      <button onclick="saveKey()" style="background:var(--surface2);border:1px solid var(--border);color:var(--accent);padding:12px 18px;border-radius:10px;font-family:'Space Mono',monospace;font-size:12px;cursor:pointer;white-space:nowrap;">Simpan</button>
+    </div>
+    <div id="keyStatus" style="font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:6px;display:none;"></div>
+    <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:6px;">
+      Gratis · Daftar di <a href="https://aistudio.google.com" target="_blank" style="color:var(--accent)">aistudio.google.com</a> → Get API Key
+    </div>
+  </div>
+
+  <div class="upload-section">
+    <div class="section-label">// Upload Daftar Lot</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/*,.pdf" multiple>
+      <span class="upload-icon">📎</span>
+      <div class="upload-title">Upload File Lot Lelang</div>
+      <div class="upload-sub">Drag & drop atau klik untuk memilih file</div>
+      <div class="upload-types">
+        <span class="type-badge">JPG</span>
+        <span class="type-badge">PNG</span>
+        <span class="type-badge">PDF</span>
+        <span class="type-badge">WEBP</span>
+      </div>
+    </div>
+
+    <div class="preview-area" id="previewArea">
+      <div class="preview-header">
+        <span>📄</span>
+        <span class="filename" id="previewFilename"></span>
+        <span style="margin-left:auto;color:var(--accent)">siap dianalisis</span>
+      </div>
+      <img id="previewImg" src="" alt="Preview">
+    </div>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <button class="analyze-btn" id="analyzeBtn" onclick="analyzeLot()">
+      <span>⚡</span> Analisis Sekarang
+    </button>
+  </div>
+
+  <div class="loading" id="loadingSection">
+    <div class="spinner"></div>
+    <div class="loading-text">AI sedang membaca lot lelang<span>...</span></div>
+    <div class="loading-text" style="margin-top:6px;font-size:11px">Mencocokkan dengan database HTL & harga jual</div>
+  </div>
+
+  <div class="results-section" id="resultsSection">
+    <div class="results-header">
+      <div class="results-title">Hasil Screening</div>
+      <button class="reset-btn" onclick="resetApp()">↺ Upload Baru</button>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card total">
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">TOTAL LOT</div>
+      </div>
+      <div class="stat-card layak">
+        <div class="stat-num" id="statLayak">0</div>
+        <div class="stat-label">✅ LAYAK BELI</div>
+      </div>
+      <div class="stat-card skip">
+        <div class="stat-num" id="statSkip">0</div>
+        <div class="stat-label">❌ SKIP</div>
+      </div>
+    </div>
+
+    <div class="lot-grid" id="lotGrid"></div>
+  </div>
+
+</div>
+
+<script>
+// ===================== DATABASE HTL =====================
+const DB = [{"No":1,"Merk":"Daihatsu","Model":"Sigra","Tipe":"1.2 R AT","Tahun":2021,"HTL Min":96,"HTL Max":103,"Jual Min":110,"Jual Max":115},{"No":2,"Merk":"Daihatsu","Model":"Ayla","Tipe":"1.0 M MT","Tahun":2023,"HTL Min":93,"HTL Max":94,"Jual Min":111,"Jual Max":111},{"No":3,"Merk":"Toyota","Model":"Innova","Tipe":"2.0 G AT old","Tahun":2019,"HTL Min":206,"HTL Max":216,"Jual Min":235,"Jual Max":245},{"No":4,"Merk":"Daihatsu","Model":"Sigra","Tipe":"1.0 M MT","Tahun":2025,"HTL Min":103,"HTL Max":104,"Jual Min":118,"Jual Max":125},{"No":5,"Merk":"Daihatsu","Model":"Sigra","Tipe":"1.0 M MT","Tahun":2024,"HTL Min":88,"HTL Max":90,"Jual Min":108,"Jual Max":115},{"No":6,"Merk":"Toyota","Model":"Avanza","Tipe":"1.3 E cvt","Tahun":2024,"HTL Min":164,"HTL Max":165,"Jual Min":185,"Jual Max":190},{"No":7,"Merk":"Mitsubishi","Model":"Xpander","Tipe":"Cross 1.5 AT","Tahun":2021,"HTL Min":192,"HTL Max":194,"Jual Min":215,"Jual Max":225},{"No":8,"Merk":"Toyota","Model":"Avanza","Tipe":"1.5 G MT","Tahun":2024,"HTL Min":174,"HTL Max":188,"Jual Min":198,"Jual Max":210},{"No":9,"Merk":"Toyota","Model":"Calya","Tipe":"1.2 G MT","Tahun":2025,"HTL Min":118,"HTL Max":126,"Jual Min":138,"Jual Max":148},{"No":10,"Merk":"Honda","Model":"Brio","Tipe":"Satya 1.2 E Cvt New","Tahun":2023,"HTL Min":141,"HTL Max":150,"Jual Min":145,"Jual Max":155},{"No":11,"Merk":"Daihatsu","Model":"Sigra","Tipe":"1.2 R AT","Tahun":2023,"HTL Min":105,"HTL Max":106,"Jual Min":125,"Jual Max":135},{"No":12,"Merk":"Suzuki","Model":"Ertiga","Tipe":"1.5 GL MT","Tahun":2021,"HTL Min":141,"HTL Max":141,"Jual Min":165,"Jual Max":175},{"No":13,"Merk":"Toyota","Model":"Calya","Tipe":"1.2 G AT old","Tahun":2019,"HTL Min":101,"HTL Max":112,"Jual Min":118,"Jual Max":124},{"No":14,"Merk":"Daihatsu","Model":"Sigra","Tipe":"1.2 X MT","Tahun":2024,"HTL Min":108,"HTL Max":108,"Jual Min":126,"Jual Max":131},{"No":15,"Merk":"Daihatsu","Model":"Sigra","Tipe":"1.2 X AT","Tahun":2022,"HTL Min":95,"HTL Max":95,"Jual Min":125,"Jual Max":135},{"No":16,"Merk":"Daihatsu","Model":"Sigra","Tipe":"1.2 R AT","Tahun":2025,"HTL Min":130,"HTL Max":130,"Jual Min":153,"Jual Max":160},{"No":17,"Merk":"Honda","Model":"Brio","Tipe":"1.2 RS CVT","Tahun":2017,"HTL Min":102,"HTL Max":105,"Jual Min":132,"Jual Max":140},{"No":18,"Merk":"Honda","Model":"Brio","Tipe":"Satya 1.2 E CVT","Tahun":2021,"HTL Min":129,"HTL Max":140,"Jual Min":148,"Jual Max":163},{"No":19,"Merk":"Toyota","Model":"Agya","Tipe":"1.2 G CVT","Tahun":2024,"HTL Min":131,"HTL Max":135,"Jual Min":142,"Jual Max":154},{"No":20,"Merk":"Toyota","Model":"Agya","Tipe":"1.2 G TRD AT","Tahun":2021,"HTL Min":108,"HTL Max":111,"Jual Min":125,"Jual Max":135},{"No":21,"Merk":"Toyota","Model":"Agya","Tipe":"1.2 G TRD AT","Tahun":2019,"HTL Min":93,"HTL Max":93,"Jual Min":120,"Jual Max":128},{"No":22,"Merk":"Toyota","Model":"Agya","Tipe":"1.2 G AT","Tahun":2019,"HTL Min":93,"HTL Max":94,"Jual Min":118,"Jual Max":124},{"No":23,"Merk":"Toyota","Model":"Avanza","Tipe":"1.5 G CVT","Tahun":2022,"HTL Min":165,"HTL Max":175,"Jual Min":194,"Jual Max":205},{"No":24,"Merk":"Toyota","Model":"Avanza","Tipe":"1.3 G AT","Tahun":2021,"HTL Min":145,"HTL Max":157,"Jual Min":162,"Jual Max":170},{"No":25,"Merk":"Toyota","Model":"Avanza Veloz","Tipe":"1.5 MT","Tahun":2021,"HTL Min":167,"HTL Max":171,"Jual Min":177,"Jual Max":185},{"No":26,"Merk":"Toyota","Model":"Calya","Tipe":"1.2 G AT","Tahun":2021,"HTL Min":106,"HTL Max":114,"Jual Min":125,"Jual Max":132},{"No":27,"Merk":"Toyota","Model":"Rush","Tipe":"1.5 G MT","Tahun":2022,"HTL Min":186,"HTL Max":186,"Jual Min":195,"Jual Max":205},{"No":28,"Merk":"Honda","Model":"Mobilio","Tipe":"1.5 E CVT","Tahun":2021,"HTL Min":137,"HTL Max":137,"Jual Min":155,"Jual Max":163},{"No":29,"Merk":"Honda","Model":"Brio","Tipe":"Satya 1.2 E MT New model","Tahun":2018,"HTL Min":104,"HTL Max":104,"Jual Min":120,"Jual Max":128},{"No":30,"Merk":"Toyota","Model":"Avanza","Tipe":"1.3 G MT","Tahun":2017,"HTL Min":110,"HTL Max":123,"Jual Min":138,"Jual Max":145},{"No":31,"Merk":"Toyota","Model":"Calya","Tipe":"1.2 G AT","Tahun":2020,"HTL Min":97,"HTL Max":109,"Jual Min":118,"Jual Max":127},{"No":32,"Merk":"Toyota","Model":"Calya","Tipe":"1.2 G MT","Tahun":2023,"HTL Min":118,"HTL Max":118,"Jual Min":125,"Jual Max":133},{"No":33,"Merk":"Toyota","Model":"Calya","Tipe":"1.2 G MT","Tahun":2024,"HTL Min":125,"HTL Max":125,"Jual Min":133,"Jual Max":143},{"No":34,"Merk":"Toyota","Model":"Calya","Tipe":"1.2 G MT","Tahun":2022,"HTL Min":102,"HTL Max":107,"Jual Min":122,"Jual Max":131},{"No":35,"Merk":"Toyota","Model":"Calya","Tipe":"1.2 G MT","Tahun":2021,"HTL Min":104,"HTL Max":112,"Jual Min":120,"Jual Max":127},{"No":36,"Merk":"Daihatsu","Model":"Xenia","Tipe":"1.3 R CVT","Tahun":2022,"HTL Min":150,"HTL Max":153,"Jual Min":175,"Jual Max":185}];
+
+// ===================== GLOBALS =====================
+let uploadedFile = null;
+let uploadedBase64 = null;
+
+function saveKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('AIza')) {
+    document.getElementById('keyStatus').textContent = '⚠ Format key salah. Harus dimulai dengan AIza...';
+    document.getElementById('keyStatus').style.color = 'var(--skip)';
+    document.getElementById('keyStatus').style.display = 'block';
+    return;
+  }
+  localStorage.setItem('gemini_key', key);
+  document.getElementById('keyStatus').textContent = '✅ API key tersimpan!';
+  document.getElementById('keyStatus').style.color = 'var(--layak)';
+  document.getElementById('keyStatus').style.display = 'block';
+}
+
+window.onload = () => {
+  const saved = localStorage.getItem('gemini_key');
+  if (saved) document.getElementById('apiKeyInput').value = saved;
+};
+
+// ===================== UPLOAD HANDLING =====================
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+  uploadedFile = file;
+  document.getElementById('errorBox').style.display = 'none';
+  
+  const preview = document.getElementById('previewArea');
+  const previewImg = document.getElementById('previewImg');
+  const previewFilename = document.getElementById('previewFilename');
+  
+  previewFilename.textContent = file.name;
+
+  if (file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedBase64 = e.target.result.split(',')[1];
+      previewImg.src = e.target.result;
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  } else if (file.type === 'application/pdf') {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      uploadedBase64 = e.target.result.split(',')[1];
+      previewImg.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%231a1a26"/><text x="50" y="55" text-anchor="middle" fill="%2300ff88" font-size="40">📄</text></svg>';
+      preview.style.display = 'block';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  document.getElementById('analyzeBtn').style.display = 'flex';
+}
+
+// ===================== MAIN ANALYSIS =====================
+async function analyzeLot() {
+  if (!uploadedBase64 || !uploadedFile) return;
+
+  const apiKey = localStorage.getItem('gemini_key') || document.getElementById('apiKeyInput').value.trim();
+  if (!apiKey) {
+    document.getElementById('errorBox').textContent = '⚠ Masukkan API key Gemini dulu!';
+    document.getElementById('errorBox').style.display = 'block';
+    return;
+  }
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('loadingSection').style.display = 'block';
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+
+  try {
+    const dbSummary = DB.map(d => 
+      `${d.Merk} ${d.Model} ${d.Tipe} ${d.Tahun} | HTL Min: ${d["HTL Min"]}jt | HTL Max: ${d["HTL Max"]}jt | Jual Min: ${d["Jual Min"]}jt | Jual Max: ${d["Jual Max"]}jt`
+    ).join('\n');
+
+    const prompt = `Kamu adalah asisten screening lot lelang mobil. Baca gambar/file yang diberikan.
+
+Tugas:
+1. Ekstrak semua lot mobil yang ada. Tiap lot biasanya punya: No Lot, Merk, Model, Tipe/Varian, Tahun, Kondisi/Grade, dan Harga Dasar/Estimasi Harga Lelang.
+2. Untuk setiap lot, cocokkan dengan database referensi harga di bawah.
+3. Hitung batas maksimal harga beli = Jual Min × 0.92 (8% lebih rendah dari Jual Min).
+4. Tentukan status: LAYAK jika harga lelang ≤ batas, SKIP jika harga lelang > batas, UNKNOWN jika tidak ada data referensi.
+
+DATABASE REFERENSI:
+${dbSummary}
+
+PENTING: Gunakan fuzzy matching - cocokkan Merk + Model + Tahun (toleransi ±1 tahun). Pilih varian yang paling mirip.
+
+Balas HANYA dengan JSON valid (tanpa markdown, tanpa backtick, tanpa penjelasan):
+{"lots":[{"no_lot":"nomor lot","merk":"merk","model":"model","tipe":"tipe","tahun":2021,"kondisi":"grade jika ada","harga_lelang":95,"ref_found":true,"ref_htl_min":96,"ref_htl_max":103,"ref_jual_min":110,"ref_jual_max":115,"batas_beli":101.2,"status":"LAYAK","selisih":6.2,"catatan":"keterangan"}]}
+
+Jika tidak ada referensi: ref_found:false, ref_htl_min:null, ref_htl_max:null, ref_jual_min:null, ref_jual_max:null, batas_beli:null, status:"UNKNOWN", selisih:null.
+Harga dalam juta. Jika di file dalam rupiah penuh (misal Rp 95.000.000), bagi 1.000.000 jadi 95.`;
+
+    const mimeType = uploadedFile.type || 'image/jpeg';
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: mimeType, data: uploadedBase64 } },
+              { text: prompt }
+            ]
+          }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 8000 }
+        })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error?.message || 'Gemini API error');
+    }
+
+    let raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    raw = raw.replace(/```json|```/g, '').trim();
+
+    // Fix truncated JSON by completing it
+    let parsed;
+    try {
+      parsed = JSON.parse(raw);
+    } catch(e) {
+      // Try to fix truncated JSON - find last complete lot object
+      const lastBrace = raw.lastIndexOf('},');
+      if (lastBrace > 0) {
+        raw = raw.substring(0, lastBrace + 1) + ']}';
+      } else {
+        const lastComplete = raw.lastIndexOf('}');
+        if (lastComplete > 0) {
+          raw = raw.substring(0, lastComplete + 1) + ']}';
+        }
+      }
+      // Remove unterminated strings
+      raw = raw.replace(/:\s*"[^"]*$/m, ': ""}]}');
+      parsed = JSON.parse(raw);
+    }
+    renderResults(parsed.lots || []);
+
+  } catch (err) {
+    document.getElementById('errorBox').textContent = '⚠ Gagal menganalisis: ' + err.message;
+    document.getElementById('errorBox').style.display = 'block';
+  } finally {
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+}
+
+// ===================== KATEGORI HTL =====================
+function getKategoriHTL(hargaLelang, htlMin, htlMax) {
+  if (!hargaLelang || !htlMin || !htlMax) return "-";
+  const selisihMin = htlMin - hargaLelang;
+  const selisihMax = htlMax - hargaLelang;
+  if (selisihMin >= 0) {
+    return "✅ Lebih murah " + selisihMin.toFixed(1) + "jt dari HTL Min";
+  } else if (selisihMax >= 0) {
+    return "⚠️ Lebih murah " + Math.abs(selisihMax).toFixed(1) + "jt dari HTL Max";
+  } else {
+    return "❌ Lebih mahal " + Math.abs(selisihMax).toFixed(1) + "jt dari HTL Max";
+  }
+}
+
+function getKategoriHTLColor(hargaLelang, htlMin, htlMax) {
+  if (!hargaLelang || !htlMin || !htlMax) return "#6b6b8a";
+  const selisihMin = htlMin - hargaLelang;
+  const selisihMax = htlMax - hargaLelang;
+  if (selisihMin >= 0) return "#00ff88";
+  if (selisihMax >= 0) return "#ffd700";
+  return "#ff4d6d";
+}
+
+// ===================== RENDER =====================
+function renderResults(lots) {
+  const total = lots.length;
+  const layak = lots.filter(l => l.status === 'LAYAK').length;
+  const skip = lots.filter(l => l.status === 'SKIP').length;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statLayak').textContent = layak;
+  document.getElementById('statSkip').textContent = skip;
+
+  // Sort: LAYAK first
+  lots.sort((a,b) => {
+    const order = { LAYAK: 0, UNKNOWN: 1, SKIP: 2 };
+    return (order[a.status] ?? 1) - (order[b.status] ?? 1);
+  });
+
+  const grid = document.getElementById('lotGrid');
+  grid.innerHTML = '';
+
+  lots.forEach((lot, i) => {
+    const statusClass = lot.status === 'LAYAK' ? 'layak' : lot.status === 'SKIP' ? 'skip' : 'unknown';
+    const statusLabel = lot.status === 'LAYAK' ? '✅ LAYAK BELI' : lot.status === 'SKIP' ? '❌ SKIP' : '⚠ TIDAK DITEMUKAN';
+    const selisihClass = lot.selisih > 0 ? 'plus' : 'minus';
+    const selisihText = lot.selisih !== null ? (lot.selisih > 0 ? `+${lot.selisih.toFixed(1)}jt margin` : `${lot.selisih.toFixed(1)}jt over`) : '-';
+
+    const card = document.createElement('div');
+    card.className = `lot-card ${statusClass}`;
+    card.style.animationDelay = `${i * 0.05}s`;
+
+    card.innerHTML = `
+      <div class="lot-card-header">
+        <div class="lot-number">LOT ${lot.no_lot || '?'}</div>
+        <div class="lot-car-info">
+          <div class="lot-car-name">${lot.merk} ${lot.model}</div>
+          <div class="lot-car-detail">${lot.tipe || '-'} · ${lot.tahun || '-'}${lot.kondisi ? ' · Grade: ' + lot.kondisi : ''}</div>
+        </div>
+        <div class="lot-status ${statusClass}">${statusLabel}</div>
+      </div>
+      ${lot.ref_found ? `
+      <div class="lot-card-body">
+        <div class="price-item">
+          <div class="price-item-label">Harga Lelang</div>
+          <div class="price-item-value lelang">${lot.harga_lelang ? lot.harga_lelang + ' jt' : '-'}</div>
+        </div>
+        <div class="price-item">
+          <div class="price-item-label">Batas Beli (92%)</div>
+          <div class="price-item-value batas">${lot.batas_beli ? lot.batas_beli.toFixed(1) + ' jt' : '-'}</div>
+        </div>
+        <div class="price-item">
+          <div class="price-item-label">Jual Min → Max</div>
+          <div class="price-item-value jual">${lot.ref_jual_min} → ${lot.ref_jual_max} jt</div>
+        </div>
+        <div class="price-item">
+          <div class="price-item-label">Selisih</div>
+          <div class="price-item-value selisih ${selisihClass}">${selisihText}</div>
+        </div>
+        <div class="price-item">
+          <div class="price-item-label">HTL Min → Max</div>
+          <div class="price-item-value" style="color:#aaaacc">${lot.ref_htl_min || "-"} → ${lot.ref_htl_max || "-"} jt</div>
+        </div>
+        <div class="price-item" style="grid-column: 1 / -1">
+          <div class="price-item-label">Posisi vs HTL</div>
+          <div class="price-item-value" style="color:${getKategoriHTLColor(lot.harga_lelang, lot.ref_htl_min, lot.ref_htl_max)}">${getKategoriHTL(lot.harga_lelang, lot.ref_htl_min, lot.ref_htl_max)}</div>
+        </div>
+      </div>
+      ` : ''}
+      ${lot.catatan ? `<div class="lot-note ${!lot.ref_found ? 'not-found' : ''}">💬 ${lot.catatan}</div>` : ''}
+    `;
+
+    grid.appendChild(card);
+  });
+
+  document.getElementById('resultsSection').style.display = 'block';
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===================== RESET =====================
+function resetApp() {
+  uploadedFile = null;
+  uploadedBase64 = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('previewArea').style.display = 'none';
+  document.getElementById('analyzeBtn').style.display = 'none';
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('lotGrid').innerHTML = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
