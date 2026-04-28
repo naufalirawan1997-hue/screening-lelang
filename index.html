@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Screening Lot Lelang × JBA</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface2: #1a1a26;
+    --border: #2a2a40;
+    --accent: #00ff88;
+    --accent2: #ff4d6d;
+    --accent3: #ffd700;
+    --text: #e8e8f0;
+    --text-muted: #6b6b8a;
+    --layak: #00ff88;
+    --skip: #ff4d6d;
+    --warning: #ffd700;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(0,255,136,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(255,77,109,0.05) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .header {
+    position: relative; z-index: 1;
+    padding: 32px 40px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 20px;
+  }
+  .header-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent), #00ccaa);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+  }
+  .header h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; }
+  .header h1 span { color: var(--accent); }
+  .header p { font-size: 13px; color: var(--text-muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
+  .badge {
+    margin-left: auto;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-family: 'Space Mono', monospace;
+    color: var(--accent);
+  }
+  .jba-badge {
+    background: rgba(0,255,136,0.1);
+    border: 1px solid rgba(0,255,136,0.3);
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; font-family: 'Space Mono', monospace;
+    color: var(--accent);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .jba-badge::before { content: '●'; font-size: 8px; animation: pulse 2s ease infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  .main {
+    position: relative; z-index: 1;
+    max-width: 1100px; margin: 0 auto;
+    padding: 32px 40px;
+  }
+  .section-label {
+    font-size: 11px; font-family: 'Space Mono', monospace;
+    color: var(--text-muted); letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 12px;
+  }
+  .upload-section { margin-bottom: 32px; }
+  .upload-zone {
+    border: 2px dashed var(--border);
+    border-radius: 16px; padding: 48px 32px;
+    text-align: center; cursor: pointer;
+    transition: all 0.25s ease;
+    background: var(--surface); position: relative; overflow: hidden;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: rgba(0,255,136,0.03);
+  }
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0;
+    cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon { font-size: 40px; margin-bottom: 12px; display: block; }
+  .upload-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .upload-sub { font-size: 13px; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+  .upload-types { display: flex; gap: 8px; justify-content: center; margin-top: 16px; }
+  .type-badge {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 11px; font-family: 'Space Mono', monospace; color: var(--text-muted);
+  }
+  .preview-area {
+    display: none; margin-top: 16px; border-radius: 12px;
+    overflow: hidden; border: 1px solid var(--border); background: var(--surface);
+  }
+  .preview-area img { width: 100%; max-height: 400px; object-fit: contain; background: #000; }
+  .preview-header {
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    font-size: 12px; font-family: 'Space Mono', monospace;
+    color: var(--text-muted); display: flex; align-items: center; gap: 8px;
+  }
+  .preview-header .filename { color: var(--accent); font-weight: 700; }
+  .analyze-btn {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, var(--accent), #00ccaa);
+    color: #000; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 800; font-family: 'Syne', sans-serif;
+    cursor: pointer; transition: all 0.2s;
+    display: none; align-items: center; justify-content: center; gap: 10px;
+    margin-top: 16px;
+  }
+  .analyze-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(0,255,136,0.25); }
+  .analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  /* Loading stages */
+  .loading { display: none; padding: 40px; }
+  .loading-stages { display: flex; flex-direction: column; gap: 10px; max-width: 420px; margin: 0 auto; }
+  .stage {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 16px; border-radius: 10px;
+    background: var(--surface); border: 1px solid var(--border);
+    font-family: 'Space Mono', monospace; font-size: 12px; color: var(--text-muted);
+    transition: all 0.3s;
+  }
+  .stage.active { border-color: var(--accent); color: var(--text); background: rgba(0,255,136,0.05); }
+  .stage.done { border-color: rgba(0,255,136,0.3); color: var(--layak); }
+  .stage.error-stage { border-color: rgba(255,77,109,0.3); color: var(--skip); }
+  .stage-icon { font-size: 16px; width: 20px; text-align: center; }
+  .stage-spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-title {
+    text-align: center; font-size: 16px; font-weight: 700;
+    margin-bottom: 20px; color: var(--text);
+  }
+
+  /* Results */
+  .results-section { display: none; }
+  .results-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .results-title { font-size: 22px; font-weight: 800; }
+  .stats-row { display: flex; gap: 12px; margin-bottom: 24px; }
+  .stat-card {
+    flex: 1; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px;
+  }
+  .stat-card.layak { border-color: rgba(0,255,136,0.3); background: rgba(0,255,136,0.05); }
+  .stat-card.skip { border-color: rgba(255,77,109,0.3); background: rgba(255,77,109,0.05); }
+  .stat-card.total { border-color: rgba(255,215,0,0.3); background: rgba(255,215,0,0.05); }
+  .stat-num { font-size: 32px; font-weight: 800; font-family: 'Space Mono', monospace; }
+  .stat-card.layak .stat-num { color: var(--layak); }
+  .stat-card.skip .stat-num { color: var(--skip); }
+  .stat-card.total .stat-num { color: var(--warning); }
+  .stat-label { font-size: 12px; color: var(--text-muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
+
+  /* JBA source info */
+  .jba-source-bar {
+    background: var(--surface); border: 1px solid rgba(0,255,136,0.2);
+    border-radius: 10px; padding: 10px 16px; margin-bottom: 20px;
+    font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-muted);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .jba-source-bar span { color: var(--accent); }
+
+  .lot-grid { display: flex; flex-direction: column; gap: 12px; }
+  .lot-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+    transition: all 0.2s; animation: slideIn 0.3s ease both;
+  }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .lot-card.layak { border-left: 4px solid var(--layak); }
+  .lot-card.skip { border-left: 4px solid var(--skip); }
+  .lot-card.unknown { border-left: 4px solid var(--text-muted); }
+  .lot-card-header { display: flex; align-items: center; padding: 16px 20px; gap: 16px; }
+  .lot-number {
+    background: var(--surface2); border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 8px;
+    font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700;
+    color: var(--text-muted); white-space: nowrap;
+  }
+  .lot-car-info { flex: 1; }
+  .lot-car-name { font-size: 16px; font-weight: 700; }
+  .lot-car-detail { font-size: 12px; color: var(--text-muted); font-family: 'Space Mono', monospace; margin-top: 2px; }
+  .lot-status {
+    padding: 8px 16px; border-radius: 8px;
+    font-size: 13px; font-weight: 700; font-family: 'Space Mono', monospace; white-space: nowrap;
+  }
+  .lot-status.layak { background: rgba(0,255,136,0.15); color: var(--layak); border: 1px solid rgba(0,255,136,0.3); }
+  .lot-status.skip { background: rgba(255,77,109,0.15); color: var(--skip); border: 1px solid rgba(255,77,109,0.3); }
+  .lot-status.unknown { background: rgba(107,107,138,0.15); color: var(--text-muted); border: 1px solid var(--border); }
+  .lot-card-body {
+    padding: 0 20px 16px;
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;
+  }
+  .price-item { background: var(--surface2); border-radius: 8px; padding: 10px 14px; }
+  .price-item-label {
+    font-size: 10px; font-family: 'Space Mono', monospace;
+    color: var(--text-muted); letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .price-item-value { font-size: 16px; font-weight: 700; font-family: 'Space Mono', monospace; }
+  .price-item-value.lelang { color: var(--warning); }
+  .price-item-value.batas { color: var(--text-muted); }
+  .price-item-value.jual { color: #8888ff; }
+  .price-item-value.selisih.plus { color: var(--layak); }
+  .price-item-value.selisih.minus { color: var(--skip); }
+  .jba-ref-bar {
+    margin: 0 20px 14px;
+    background: rgba(0,255,136,0.05); border: 1px solid rgba(0,255,136,0.15);
+    border-radius: 8px; padding: 8px 14px;
+    font-size: 11px; font-family: 'Space Mono', monospace; color: var(--text-muted);
+  }
+  .jba-ref-bar a { color: var(--accent); text-decoration: none; }
+  .jba-ref-bar a:hover { text-decoration: underline; }
+  .lot-note {
+    padding: 12px 20px 14px; font-size: 12px;
+    color: var(--text-muted); font-family: 'Space Mono', monospace;
+    border-top: 1px solid var(--border);
+  }
+  .lot-note.not-found { color: var(--warning); }
+
+  /* API Key */
+  .api-key-section { margin-bottom: 20px; }
+  .api-row { display: flex; gap: 10px; align-items: center; }
+  .api-input {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px; color: var(--text);
+    font-family: 'Space Mono', monospace; font-size: 13px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .api-input:focus { border-color: var(--accent); }
+  .save-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--accent); padding: 12px 18px; border-radius: 10px;
+    font-family: 'Space Mono', monospace; font-size: 12px; cursor: pointer;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .save-btn:hover { border-color: var(--accent); }
+  .reset-btn {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--text); padding: 10px 20px; border-radius: 10px;
+    font-size: 13px; font-family: 'Space Mono', monospace;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .reset-btn:hover { border-color: var(--text-muted); }
+  .error-box {
+    display: none; background: rgba(255,77,109,0.1);
+    border: 1px solid rgba(255,77,109,0.3); border-radius: 12px;
+    padding: 16px 20px; margin-top: 16px;
+    font-family: 'Space Mono', monospace; font-size: 13px; color: var(--skip);
+  }
+
+  /* Threshold config */
+  .config-row {
+    display: flex; gap: 12px; align-items: center; margin-bottom: 20px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px;
+  }
+  .config-label { font-size: 12px; font-family: 'Space Mono', monospace; color: var(--text-muted); flex: 1; }
+  .config-label strong { color: var(--text); }
+  .config-select {
+    background: var(--surface2); border: 1px solid var(--border);
+    color: var(--accent); padding: 8px 12px; border-radius: 8px;
+    font-family: 'Space Mono', monospace; font-size: 12px; outline: none; cursor: pointer;
+  }
+
+  @media (max-width: 600px) {
+    .main { padding: 20px; }
+    .header { padding: 20px; }
+    .stats-row { flex-direction: column; }
+    .lot-card-body { grid-template-columns: 1fr 1fr; }
+    .lot-card-header { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-icon">🏷️</div>
+  <div>
+    <h1>Screening <span>Lot Lelang</span></h1>
+    <p>AI-powered · Referensi harga real-time dari JBA · Threshold kustom</p>
+  </div>
+  <div class="jba-badge">Live JBA Data</div>
+  <div class="badge">v2.0</div>
+</div>
+
+<div class="main">
+
+  <!-- API Key -->
+  <div class="api-key-section upload-section">
+    <div class="section-label">// Google Gemini API Key</div>
+    <div class="api-row">
+      <input type="password" id="apiKeyInput" class="api-input" placeholder="Paste API key Gemini kamu di sini (AIzaSy...)">
+      <button onclick="saveKey()" class="save-btn">Simpan</button>
+    </div>
+    <div id="keyStatus" style="font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:6px;display:none;"></div>
+    <div style="font-size:11px;font-family:'Space Mono',monospace;color:var(--text-muted);margin-top:6px;">
+      Gratis · Daftar di <a href="https://aistudio.google.com" target="_blank" style="color:var(--accent)">aistudio.google.com</a> → Get API Key
+    </div>
+  </div>
+
+  <!-- Threshold config -->
+  <div class="config-row">
+    <div class="config-label">
+      <strong>Threshold LAYAK</strong> — Lot dianggap LAYAK jika harga lelang ≤ rata-rata harga JBA × threshold
+    </div>
+    <select id="thresholdSelect" class="config-select">
+      <option value="0.85">85% (Konservatif)</option>
+      <option value="0.90">90%</option>
+      <option value="0.92" selected>92% (Default)</option>
+      <option value="0.95">95%</option>
+      <option value="1.00">100% (Pas rata-rata)</option>
+      <option value="1.05">105% (Agresif)</option>
+    </select>
+  </div>
+
+  <!-- Upload -->
+  <div class="upload-section">
+    <div class="section-label">// Upload Daftar Lot</div>
+    <div class="upload-zone" id="uploadZone">
+      <input type="file" id="fileInput" accept="image/*,.pdf">
+      <span class="upload-icon">📎</span>
+      <div class="upload-title">Upload File Lot Lelang</div>
+      <div class="upload-sub">Drag & drop atau klik untuk memilih file</div>
+      <div class="upload-types">
+        <span class="type-badge">JPG</span>
+        <span class="type-badge">PNG</span>
+        <span class="type-badge">PDF</span>
+        <span class="type-badge">WEBP</span>
+      </div>
+    </div>
+
+    <div class="preview-area" id="previewArea">
+      <div class="preview-header">
+        <span>📄</span>
+        <span class="filename" id="previewFilename"></span>
+        <span style="margin-left:auto;color:var(--accent)">siap dianalisis</span>
+      </div>
+      <img id="previewImg" src="" alt="Preview">
+    </div>
+
+    <div class="error-box" id="errorBox"></div>
+
+    <button class="analyze-btn" id="analyzeBtn" onclick="analyzeLot()">
+      <span>⚡</span> Analisis & Cocokkan dengan JBA
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" id="loadingSection">
+    <div class="loading-title">Memproses lot lelang...</div>
+    <div class="loading-stages">
+      <div class="stage" id="stage1">
+        <div class="stage-icon">🤖</div>
+        <div>AI membaca & mengekstrak data lot</div>
+      </div>
+      <div class="stage" id="stage2">
+        <div class="stage-icon">🌐</div>
+        <div id="stage2text">Mengambil data harga JBA...</div>
+      </div>
+      <div class="stage" id="stage3">
+        <div class="stage-icon">📊</div>
+        <div>Menghitung & membandingkan harga</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="results-section" id="resultsSection">
+    <div class="results-header">
+      <div class="results-title">Hasil Screening</div>
+      <button class="reset-btn" onclick="resetApp()">↺ Upload Baru</button>
+    </div>
+
+    <div class="jba-source-bar" id="jbaSourceBar">
+      📡 Referensi harga dari <span>jba.co.id/hasil-harga-lelang</span> · diambil real-time saat analisis
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card total">
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">TOTAL LOT</div>
+      </div>
+      <div class="stat-card layak">
+        <div class="stat-num" id="statLayak">0</div>
+        <div class="stat-label">✅ LAYAK BELI</div>
+      </div>
+      <div class="stat-card skip">
+        <div class="stat-num" id="statSkip">0</div>
+        <div class="stat-label">❌ SKIP</div>
+      </div>
+    </div>
+
+    <div class="lot-grid" id="lotGrid"></div>
+  </div>
+
+</div>
+
+<script>
+let uploadedFile = null;
+let uploadedBase64 = null;
+
+// ===================== KEY MANAGEMENT =====================
+function saveKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('AIza')) {
+    showKeyStatus('⚠ Format key salah. Harus dimulai dengan AIza...', 'var(--skip)');
+    return;
+  }
+  localStorage.setItem('gemini_key', key);
+  showKeyStatus('✅ API key tersimpan!', 'var(--layak)');
+}
+function showKeyStatus(msg, color) {
+  const el = document.getElementById('keyStatus');
+  el.textContent = msg;
+  el.style.color = color;
+  el.style.display = 'block';
+}
+window.onload = () => {
+  const saved = localStorage.getItem('gemini_key');
+  if (saved) document.getElementById('apiKeyInput').value = saved;
+};
+
+// ===================== UPLOAD =====================
+const uploadZone = document.getElementById('uploadZone');
+const fileInput = document.getElementById('fileInput');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  if (e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) handleFile(e.target.files[0]); });
+
+function handleFile(file) {
+  uploadedFile = file;
+  document.getElementById('errorBox').style.display = 'none';
+  const preview = document.getElementById('previewArea');
+  const previewImg = document.getElementById('previewImg');
+  document.getElementById('previewFilename').textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    uploadedBase64 = e.target.result.split(',')[1];
+    if (file.type.startsWith('image/')) {
+      previewImg.src = e.target.result;
+    } else {
+      previewImg.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="80" viewBox="0 0 100 80"><rect width="100" height="80" fill="%231a1a26"/><text x="50" y="45" text-anchor="middle" fill="%2300ff88" font-size="30">📄</text></svg>';
+    }
+    preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+  document.getElementById('analyzeBtn').style.display = 'flex';
+}
+
+// ===================== STAGE HELPERS =====================
+function setStage(id, state, textOverride) {
+  const el = document.getElementById(id);
+  el.className = 'stage ' + state;
+  const icon = el.querySelector('.stage-icon');
+  // Replace spinner if any
+  const existing = el.querySelector('.stage-spinner');
+  if (existing) existing.remove();
+  if (state === 'active') {
+    const sp = document.createElement('div');
+    sp.className = 'stage-spinner';
+    el.insertBefore(sp, el.firstChild);
+    icon.style.display = 'none';
+  } else {
+    icon.style.display = '';
+    if (state === 'done') icon.textContent = '✅';
+    if (state === 'error-stage') icon.textContent = '❌';
+  }
+  if (textOverride) {
+    const texts = el.querySelectorAll('div:not(.stage-icon):not(.stage-spinner)');
+    if (texts.length) texts[texts.length-1].textContent = textOverride;
+  }
+}
+
+// ===================== JBA SLUG MAP =====================
+const JBA_MODEL_SLUGS = {
+  'avanza': 'avanza', 'innova': 'innova', 'xenia': 'xenia',
+  'livina': 'livina', 'mobilio': 'mobilio', 'jazz': 'jazz',
+  'ertiga': 'ertiga', 'calya': 'calya', 'colt': 'colt',
+  'brio': 'brio', 'ayla': 'ayla', 'agya': 'agya',
+  'cr-v': 'cr-v', 'crv': 'cr-v', 'terios': 'terios',
+  'sigra': 'sigra', 'rush': 'rush', 'carry': 'carry',
+  'xpander': 'xpander', 'confero': 'confero', 'fortuner': 'fortuner',
+  'corolla': 'corolla', 'alphard': 'alphard', 'yaris': 'yaris',
+  'city': 'city', 'serena': 'serena', 'march': 'march',
+  'civic': 'civic', 'freed': 'freed', 'karimun': 'karimun',
+  'camry': 'camry', 'luxio': 'luxio', 'accord': 'accord',
+  'pajero': 'pajero', 'sienta': 'sienta', 'almaz': 'almaz',
+  'ignis': 'ignis', 'hr-v': 'hr-v', 'hrv': 'hr-v',
+  'rocky': 'rocky', 'cortez': 'cortez', 'panther': 'panther',
+  'raize': 'raize', 'x trail': 'x-trail', 'xtrail': 'x-trail',
+  'veloz': 'avanza', 'avanza veloz': 'avanza',
+  'datsun go': 'go', 'go': 'go', 'strada': 'strada',
+};
+
+function getJBASlug(model) {
+  const m = model.toLowerCase().trim();
+  if (JBA_MODEL_SLUGS[m]) return JBA_MODEL_SLUGS[m];
+  for (const key of Object.keys(JBA_MODEL_SLUGS)) {
+    if (m.includes(key) || key.includes(m)) return JBA_MODEL_SLUGS[key];
+  }
+  return null;
+}
+
+// ===================== FETCH JBA DATA =====================
+// Uses a CORS proxy to fetch JBA pages
+const CORS_PROXY = 'https://api.allorigins.win/get?url=';
+
+async function fetchJBAData(model, tahun) {
+  const slug = getJBASlug(model);
+  if (!slug) return null;
+
+  const url = `https://www.jba.co.id/id/hasil-harga-lelang/lelang/${slug}`;
+  try {
+    const proxyUrl = CORS_PROXY + encodeURIComponent(url);
+    const resp = await fetch(proxyUrl);
+    if (!resp.ok) return null;
+    const json = await resp.json();
+    const html = json.contents;
+
+    // Parse the table rows from JBA HTML
+    // Pattern: rows with model, type, year, location, price
+    const rows = [];
+    const rowRegex = /<tr[^>]*>[\s\S]*?<\/tr>/gi;
+    const tdRegex = /<td[^>]*>([\s\S]*?)<\/td>/gi;
+
+    // Better approach: find the price data in the table
+    // JBA table structure: Model | Tipe | Tahun | Lokasi | Harga
+    const tableMatch = html.match(/Hasil harga lelang[\s\S]*?<table[\s\S]*?<\/table>/i);
+    if (!tableMatch) {
+      // Try alternate parsing: look for price patterns near year
+      return parsePricesFromHTML(html, tahun, model);
+    }
+
+    return parsePricesFromHTML(html, tahun, model);
+  } catch(e) {
+    console.warn('JBA fetch failed:', e);
+    return null;
+  }
+}
+
+function parsePricesFromHTML(html, targetTahun, targetModel) {
+  // Extract all rows that contain Rp prices and years
+  // Pattern: find year + price pairs
+  const prices = [];
+
+  // Look for table rows with data
+  const rowPattern = /<tr[\s\S]*?<\/tr>/gi;
+  const rows = html.match(rowPattern) || [];
+
+  for (const row of rows) {
+    // Strip tags for text content
+    const text = row.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+    // Must contain a year (4 digits 2000-2030) and a price (Rp ...)
+    const yearMatch = text.match(/\b(20\d{2})\b/);
+    const priceMatch = text.match(/Rp\s*([\d,\.]+)/i);
+
+    if (!yearMatch || !priceMatch) continue;
+
+    const tahun = parseInt(yearMatch[1]);
+    const priceStr = priceMatch[1].replace(/[,\.]/g, '');
+    const price = parseInt(priceStr);
+
+    if (isNaN(tahun) || isNaN(price) || price < 10000000 || price > 5000000000) continue;
+
+    const priceMio = price / 1000000;
+    prices.push({ tahun, price: priceMio });
+  }
+
+  if (prices.length === 0) return null;
+
+  // Filter by target year ±2
+  const targetYear = parseInt(targetTahun);
+  let filtered = prices.filter(p => Math.abs(p.tahun - targetYear) <= 2);
+  if (filtered.length === 0) filtered = prices; // fallback: all
+
+  const vals = filtered.map(p => p.price);
+  const avg = vals.reduce((a,b) => a+b, 0) / vals.length;
+  const min = Math.min(...vals);
+  const max = Math.max(...vals);
+  const count = filtered.length;
+
+  return { avg, min, max, count, targetYear, slug: getJBASlug(targetModel) };
+}
+
+// ===================== MAIN ANALYSIS =====================
+async function analyzeLot() {
+  if (!uploadedBase64 || !uploadedFile) return;
+
+  const apiKey = localStorage.getItem('gemini_key') || document.getElementById('apiKeyInput').value.trim();
+  if (!apiKey) {
+    document.getElementById('errorBox').textContent = '⚠ Masukkan API key Gemini dulu!';
+    document.getElementById('errorBox').style.display = 'block';
+    return;
+  }
+
+  const threshold = parseFloat(document.getElementById('thresholdSelect').value);
+
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('loadingSection').style.display = 'block';
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+
+  // Reset stages
+  ['stage1','stage2','stage3'].forEach(s => setStage(s, ''));
+
+  try {
+    // ---- STAGE 1: AI extract lots ----
+    setStage('stage1', 'active');
+
+    const prompt = `Kamu adalah asisten ekstraksi data lot lelang mobil. Baca gambar/file.
+
+Tugas: Ekstrak semua lot mobil. Tiap lot punya: No Lot, Merk, Model, Tipe/Varian, Tahun, Kondisi/Grade, dan Harga Dasar Lelang.
+
+Balas HANYA dengan JSON valid (tanpa markdown, tanpa backtick):
+{"lots":[{"no_lot":"nomor lot","merk":"merk","model":"model","tipe":"tipe/varian","tahun":2021,"kondisi":"grade jika ada","harga_lelang":95}]}
+
+Harga dalam juta rupiah. Jika dalam rupiah penuh (misal Rp 95.000.000), bagi 1.000.000 jadi 95.
+Untuk model, gunakan nama pendek standar: Avanza, Calya, Brio, Sigra, dll.`;
+
+    const mimeType = uploadedFile.type || 'image/jpeg';
+    const resp1 = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [
+            { inline_data: { mime_type: mimeType, data: uploadedBase64 } },
+            { text: prompt }
+          ]}],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 4000 }
+        })
+      }
+    );
+    const d1 = await resp1.json();
+    if (!resp1.ok) throw new Error(d1.error?.message || 'Gemini API error');
+
+    let raw = d1.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    raw = raw.replace(/```json|```/g, '').trim();
+    let parsed;
+    try { parsed = JSON.parse(raw); }
+    catch(e) {
+      const lb = raw.lastIndexOf('},');
+      raw = lb > 0 ? raw.substring(0,lb+1)+']}' : raw.substring(0,raw.lastIndexOf('}')+1)+']}';
+      parsed = JSON.parse(raw);
+    }
+
+    const lots = parsed.lots || [];
+    if (lots.length === 0) throw new Error('Tidak ada lot yang ditemukan dalam file.');
+
+    setStage('stage1', 'done', `AI berhasil ekstrak ${lots.length} lot`);
+
+    // ---- STAGE 2: Fetch JBA data per model ----
+    setStage('stage2', 'active', `Mengambil data JBA untuk ${lots.length} lot...`);
+
+    // Group unique models to avoid duplicate fetches
+    const uniqueModels = {};
+    for (const lot of lots) {
+      const key = lot.model.toLowerCase().trim() + '_' + lot.tahun;
+      if (!uniqueModels[key]) uniqueModels[key] = { model: lot.model, tahun: lot.tahun };
+    }
+
+    const jbaCache = {};
+    let fetched = 0;
+    for (const key of Object.keys(uniqueModels)) {
+      const { model, tahun } = uniqueModels[key];
+      document.getElementById('stage2text').textContent = `Mengambil data JBA: ${model} ${tahun}...`;
+      const data = await fetchJBAData(model, tahun);
+      jbaCache[key] = data;
+      fetched++;
+    }
+
+    const successFetch = Object.values(jbaCache).filter(v => v !== null).length;
+    setStage('stage2', 'done', `Data JBA: ${successFetch}/${Object.keys(uniqueModels).length} model berhasil diambil`);
+
+    // ---- STAGE 3: Calculate & render ----
+    setStage('stage3', 'active');
+
+    const enrichedLots = lots.map(lot => {
+      const key = lot.model.toLowerCase().trim() + '_' + lot.tahun;
+      const jba = jbaCache[key];
+      const harga = lot.harga_lelang;
+
+      if (!jba || !harga) {
+        return { ...lot, jba_found: false, status: 'UNKNOWN', selisih: null };
+      }
+
+      const batasBeli = jba.avg * threshold;
+      const selisih = batasBeli - harga; // positif = margin, negatif = over
+      const status = harga <= batasBeli ? 'LAYAK' : 'SKIP';
+
+      return {
+        ...lot,
+        jba_found: true,
+        jba_avg: jba.avg,
+        jba_min: jba.min,
+        jba_max: jba.max,
+        jba_count: jba.count,
+        jba_slug: jba.slug,
+        batas_beli: batasBeli,
+        selisih,
+        status,
+        threshold_pct: Math.round(threshold * 100),
+      };
+    });
+
+    setStage('stage3', 'done');
+    renderResults(enrichedLots, threshold);
+
+  } catch(err) {
+    document.getElementById('errorBox').textContent = '⚠ Gagal: ' + err.message;
+    document.getElementById('errorBox').style.display = 'block';
+    ['stage1','stage2','stage3'].forEach(s => {
+      const el = document.getElementById(s);
+      if (el.classList.contains('active')) setStage(s, 'error-stage');
+    });
+  } finally {
+    document.getElementById('loadingSection').style.display = 'none';
+    document.getElementById('analyzeBtn').disabled = false;
+  }
+}
+
+// ===================== RENDER =====================
+function renderResults(lots, threshold) {
+  const total = lots.length;
+  const layak = lots.filter(l => l.status === 'LAYAK').length;
+  const skip = lots.filter(l => l.status === 'SKIP').length;
+
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statLayak').textContent = layak;
+  document.getElementById('statSkip').textContent = skip;
+
+  lots.sort((a,b) => {
+    const order = { LAYAK: 0, UNKNOWN: 1, SKIP: 2 };
+    return (order[a.status]??1) - (order[b.status]??1);
+  });
+
+  const grid = document.getElementById('lotGrid');
+  grid.innerHTML = '';
+
+  lots.forEach((lot, i) => {
+    const statusClass = lot.status === 'LAYAK' ? 'layak' : lot.status === 'SKIP' ? 'skip' : 'unknown';
+    const statusLabel = lot.status === 'LAYAK' ? '✅ LAYAK BELI' : lot.status === 'SKIP' ? '❌ SKIP' : '⚠ DATA TIDAK ADA';
+    const selisihClass = (lot.selisih ?? 0) >= 0 ? 'plus' : 'minus';
+    const selisihText = lot.selisih !== null
+      ? (lot.selisih >= 0 ? `+${lot.selisih.toFixed(1)}jt margin` : `${lot.selisih.toFixed(1)}jt over`)
+      : '-';
+
+    const card = document.createElement('div');
+    card.className = `lot-card ${statusClass}`;
+    card.style.animationDelay = `${i * 0.05}s`;
+
+    const jbaUrl = lot.jba_slug ? `https://www.jba.co.id/id/hasil-harga-lelang/lelang/${lot.jba_slug}` : '#';
+    const jbaRefHtml = lot.jba_found ? `
+      <div class="jba-ref-bar">
+        📡 Referensi JBA: <b>${lot.jba_count} transaksi</b> ${lot.tahun}±2thn ·
+        range Rp${lot.jba_min?.toFixed(0)}jt–${lot.jba_max?.toFixed(0)}jt ·
+        <a href="${jbaUrl}" target="_blank">lihat data →</a>
+      </div>` : '';
+
+    card.innerHTML = `
+      <div class="lot-card-header">
+        <div class="lot-number">LOT ${lot.no_lot || '?'}</div>
+        <div class="lot-car-info">
+          <div class="lot-car-name">${lot.merk} ${lot.model}</div>
+          <div class="lot-car-detail">${lot.tipe || '-'} · ${lot.tahun || '-'}${lot.kondisi ? ' · Grade: '+lot.kondisi : ''}</div>
+        </div>
+        <div class="lot-status ${statusClass}">${statusLabel}</div>
+      </div>
+      ${lot.jba_found ? `
+      <div class="lot-card-body">
+        <div class="price-item">
+          <div class="price-item-label">Harga Lelang</div>
+          <div class="price-item-value lelang">${lot.harga_lelang ? lot.harga_lelang+'jt' : '-'}</div>
+        </div>
+        <div class="price-item">
+          <div class="price-item-label">Rata-rata JBA</div>
+          <div class="price-item-value jual">${lot.jba_avg?.toFixed(1)}jt</div>
+        </div>
+        <div class="price-item">
+          <div class="price-item-label">Batas Beli (${lot.threshold_pct}%)</div>
+          <div class="price-item-value batas">${lot.batas_beli?.toFixed(1)}jt</div>
+        </div>
+        <div class="price-item">
+          <div class="price-item-label">Selisih</div>
+          <div class="price-item-value selisih ${selisihClass}">${selisihText}</div>
+        </div>
+      </div>
+      ${jbaRefHtml}
+      ` : ''}
+      ${!lot.jba_found ? `<div class="lot-note not-found">⚠ Tidak ditemukan di database JBA. Cek manual: <a href="https://www.jba.co.id/id/hasil-harga-lelang" target="_blank" style="color:var(--accent)">jba.co.id</a></div>` : ''}
+      ${lot.catatan ? `<div class="lot-note">💬 ${lot.catatan}</div>` : ''}
+    `;
+
+    grid.appendChild(card);
+  });
+
+  document.getElementById('resultsSection').style.display = 'block';
+  document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ===================== RESET =====================
+function resetApp() {
+  uploadedFile = null;
+  uploadedBase64 = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('previewArea').style.display = 'none';
+  document.getElementById('analyzeBtn').style.display = 'none';
+  document.getElementById('resultsSection').style.display = 'none';
+  document.getElementById('errorBox').style.display = 'none';
+  document.getElementById('lotGrid').innerHTML = '';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+</body>
+</html>
